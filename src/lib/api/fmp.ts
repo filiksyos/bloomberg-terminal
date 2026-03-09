@@ -57,3 +57,7 @@ export async function getStockLosers() {
 export async function getStockMostActive() {
   return fmpFetch("/stock_market/actives");
 }
+
+export async function getHistoricalDaily(symbol: string, from: string, to: string) {
+  return fmpFetch(`/historical-price-full/${symbol}`, { from, to });
+}

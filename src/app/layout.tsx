@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { ThemeApplier } from "@/providers/ThemeApplier";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <QueryProvider>
+          <ThemeApplier />
           <WebSocketProvider>
             {children}
             <Toaster

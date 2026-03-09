@@ -27,3 +27,7 @@ export async function getTechnicalIndicator(symbol: string, indicator: string, t
     series_type: "close",
   });
 }
+
+export async function getDailyTimeSeries(symbol: string, outputsize: "compact" | "full" = "compact") {
+  return avFetch({ function: "TIME_SERIES_DAILY", symbol, outputsize });
+}

@@ -29,12 +29,20 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
     if (!apiKey) return;
 
+    let retryDelay = 5000;
+    const maxRetryDelay = 60000;
+    let failCount = 0;
+    const maxFailsBeforePause = 10;
+    const pauseDurationMs = 5 * 60 * 1000;
+
     function connect() {
       const ws = new WebSocket(`wss://ws.finnhub.io?token=${apiKey}`);
       wsRef.current = ws;
 
       ws.onopen = () => {
         setIsConnected(true);
+        retryDelay = 5000;
+        failCount = 0;
         subscribedSymbols.current.forEach((symbol) => {
           ws.send(JSON.stringify({ type: "subscribe", symbol }));
         });
@@ -53,7 +61,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
       ws.onclose = () => {
         setIsConnected(false);
-        reconnectTimeout.current = setTimeout(connect, 5000);
+        wsRef.current = null;
+        failCount++;
+        const delay = failCount >= maxFailsBeforePause ? pauseDurationMs : Math.min(retryDelay, maxRetryDelay);
+        if (failCount >= maxFailsBeforePause) retryDelay = 5000;
+        else retryDelay = Math.min(retryDelay * 2, maxRetryDelay);
+        reconnectTimeout.current = setTimeout(connect, delay);
       };
 
       ws.onerror = () => setIsConnected(false);

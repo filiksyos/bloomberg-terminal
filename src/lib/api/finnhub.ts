@@ -1,3 +1,5 @@
+import { checkRateLimit } from "@/lib/rateLimit";
+
 const BASE_URL = "https://finnhub.io/api/v1";
 
 function getKey(): string {
@@ -5,6 +7,10 @@ function getKey(): string {
 }
 
 async function finnhubFetch(endpoint: string, params: Record<string, string> = {}) {
+  if (!checkRateLimit("finnhub", 55, 60000)) {
+    throw new Error("Finnhub rate limit exceeded: 429");
+  }
+
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.set("token", getKey());
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));

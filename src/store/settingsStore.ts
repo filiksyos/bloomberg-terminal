@@ -13,6 +13,8 @@ interface SettingsState {
   flashPrices: boolean;
   compactMode: boolean;
   soundEnabled: boolean;
+  theme: "dark" | "light";
+  setTheme: (t: "dark" | "light") => void;
   setRefreshInterval: (interval: number) => void;
   setFlashPrices: (enabled: boolean) => void;
   setCompactMode: (enabled: boolean) => void;
@@ -33,6 +35,8 @@ export const useSettingsStore = create<SettingsState>()(
       flashPrices: true,
       compactMode: false,
       soundEnabled: true,
+      theme: "dark",
+      setTheme: (t) => set({ theme: t }),
       setRefreshInterval: (interval) => set({ refreshInterval: interval }),
       setFlashPrices: (enabled) => set({ flashPrices: enabled }),
       setCompactMode: (enabled) => set({ compactMode: enabled }),
