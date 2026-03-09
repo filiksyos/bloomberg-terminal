@@ -33,8 +33,11 @@ export function CommandBar() {
   const debouncedSearch = useCallback(
     debounce(async (q: string) => {
       if (q.length < 2) return;
+      // In NLP mode (user typed a space), only search the first word — Finnhub expects ticker/company names, not full sentences
+      const searchQuery = /\s/.test(q.trim()) ? (q.trim().split(/\s+/)[0] ?? "") : q;
+      if (searchQuery.length < 2) return;
       try {
-        const res = await fetch(`/api/stocks/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
         setSearchResults(data.results?.slice(0, 5) || []);
       } catch {
