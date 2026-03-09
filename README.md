@@ -4,8 +4,6 @@ A web-based Bloomberg Terminal clone with real-time market data, technical analy
 
 > **Fork of [aravhawk/bloomberg-terminal](https://github.com/aravhawk/bloomberg-terminal)** — enhanced with AI-powered natural language commands, improved with traycer.
 
-![License](https://img.shields.io/badge/license-MIT-blue)
-
 ## Features
 
 **39 function screens** covering the core Bloomberg Terminal workflow:
