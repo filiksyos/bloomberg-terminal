@@ -23,21 +23,22 @@
 }
 
 @theme inline {
-  --color-bloomberg-black: #000000;
-  --color-bloomberg-dark: #0a0a0a;
-  --color-bloomberg-panel: #111111;
-  --color-bloomberg-panel-alt: #1a1a1a;
-  --color-bloomberg-border: #333333;
-  --color-bloomberg-amber: #fb8b1e;
-  --color-bloomberg-amber-dim: #c97016;
-  --color-bloomberg-white: #e0e0e0;
-  --color-bloomberg-muted: #888888;
-  --color-bloomberg-green: #00d26a;
-  --color-bloomberg-red: #ff433d;
-  --color-bloomberg-blue: #0068ff;
-  --color-bloomberg-cyan: #4af6c3;
-  --color-bloomberg-yellow: #ffd700;
-  --color-bloomberg-brand-green: #33aa33;
+  /* Bloomberg color tokens reference mutable --bb-* variables so text-bloomberg-* and bg-bloomberg-* utilities respond to [data-theme] overrides */
+  --color-bloomberg-black: var(--bb-black);
+  --color-bloomberg-dark: var(--bb-dark);
+  --color-bloomberg-panel: var(--bb-panel);
+  --color-bloomberg-panel-alt: var(--bb-panel-alt);
+  --color-bloomberg-border: var(--bb-border);
+  --color-bloomberg-amber: var(--bb-amber);
+  --color-bloomberg-amber-dim: var(--bb-amber-dim);
+  --color-bloomberg-white: var(--bb-white);
+  --color-bloomberg-muted: var(--bb-muted);
+  --color-bloomberg-green: var(--bb-green);
+  --color-bloomberg-red: var(--bb-red);
+  --color-bloomberg-blue: var(--bb-blue);
+  --color-bloomberg-cyan: var(--bb-cyan);
+  --color-bloomberg-yellow: var(--bb-yellow);
+  --color-bloomberg-brand-green: var(--bb-brand-green);
   --font-mono: "JetBrains Mono", monospace;
   --text-xxs: 10px;
   --text-xxs--line-height: 14px;
@@ -59,6 +60,16 @@
   --bb-cyan: #4af6c3;
   --bb-yellow: #ffd700;
   --bb-brand-green: #33aa33;
+}
+
+[data-theme="light"] {
+  --bb-black: #ffffff;
+  --bb-dark: #f5f5f5;
+  --bb-panel: #efefef;
+  --bb-panel-alt: #e5e5e5;
+  --bb-border: #cccccc;
+  --bb-white: #111111;
+  --bb-muted: #555555;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

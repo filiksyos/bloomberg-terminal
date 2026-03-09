@@ -16,7 +16,8 @@ export async function GET(req: Request) {
     }));
 
     return NextResponse.json({ results });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+  } catch {
+    // Return empty results instead of 500 — Finnhub can fail for long/unusual queries or rate limits
+    return NextResponse.json({ results: [] });
   }
 }

@@ -1,18 +1,38 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useScreener } from "@/hooks/useScreener";
 import { LoadingState } from "@/components/data-display/LoadingState";
 import { formatPrice, formatLargeNumber, formatPercent, formatVolume, getChangeColor } from "@/lib/formatters";
 import { SECTORS } from "@/lib/constants";
-import type { Security, ScreenerFilters } from "@/lib/types";
+import type { Security, ScreenerFilters, CommandQualifiers } from "@/lib/types";
 
-export function EQS({ security }: { security?: Security | null }) {
+const DEFAULT_FILTERS: ScreenerFilters = {
+  marketCapMoreThan: 1000000000,
+  limit: 50,
+};
+
+function filtersFromQualifiers(qualifiers?: CommandQualifiers | null): ScreenerFilters {
+  const base = { ...DEFAULT_FILTERS };
+  if (!qualifiers) return base;
+  if (qualifiers.sector) base.sector = qualifiers.sector;
+  if (qualifiers.exchange) base.exchange = qualifiers.exchange;
+  if (qualifiers.country) base.country = qualifiers.country;
+  if (qualifiers.limit != null) base.limit = qualifiers.limit;
+  return base;
+}
+
+export function EQS({ security, qualifiers }: { security?: Security | null; qualifiers?: CommandQualifiers }) {
   void security;
-  const [filters, setFilters] = useState<ScreenerFilters>({
-    marketCapMoreThan: 1000000000,
-    limit: 50,
-  });
-  const [activeFilters, setActiveFilters] = useState<ScreenerFilters | null>(filters);
+  const qualifierFilters = filtersFromQualifiers(qualifiers);
+  const [filters, setFilters] = useState<ScreenerFilters>(() => qualifierFilters);
+  const [activeFilters, setActiveFilters] = useState<ScreenerFilters | null>(() => qualifierFilters);
+
+  useEffect(() => {
+    if (!qualifiers || Object.keys(qualifiers).length === 0) return;
+    const next = filtersFromQualifiers(qualifiers);
+    setFilters(next);
+    setActiveFilters(next);
+  }, [qualifiers]);
   const { data: results, isLoading } = useScreener(activeFilters);
 
   const updateFilter = (key: keyof ScreenerFilters, value: string) => {

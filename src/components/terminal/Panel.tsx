@@ -81,6 +81,7 @@ export function Panel({ panelState, isActive }: PanelProps) {
           <FunctionRouter
             functionCode={activeTab.functionCode}
             security={activeTab.security}
+            qualifiers={activeTab.qualifiers}
           />
         ) : (
           <div className="p-2 text-bloomberg-muted text-[10px]">No active tab</div>

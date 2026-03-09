@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import type { FunctionCode, Security } from "@/lib/types";
+import type { FunctionCode, Security, CommandQualifiers } from "@/lib/types";
 import { LoadingState } from "@/components/data-display/LoadingState";
 
 const Loading = () => <LoadingState />;
@@ -45,7 +45,7 @@ const TRADE = dynamic(() => import("@/components/functions/TRADE").then((m) => (
 const OMS = dynamic(() => import("@/components/functions/OMS").then((m) => ({ default: m.OMS })), { loading: Loading });
 const BLOTTER = dynamic(() => import("@/components/functions/BLOTTER").then((m) => ({ default: m.BLOTTER })), { loading: Loading });
 
-const FUNCTION_MAP: Record<FunctionCode, React.ComponentType<{ security?: Security | null }>> = {
+const FUNCTION_MAP: Record<FunctionCode, React.ComponentType<{ security?: Security | null; qualifiers?: CommandQualifiers }>> = {
   DES, GP, FA, ANR, DVD, ERN, COMP, RV,
   BQ, CN, MGMT, CACS,
   TOP, WEI, MOST, MOV, GIP, IPO: IPOScreen, SECF,
@@ -67,8 +67,16 @@ const FUNCTION_MAP: Record<FunctionCode, React.ComponentType<{ security?: Securi
   BLOTTER,
 };
 
-export function FunctionRouter({ functionCode, security }: { functionCode: FunctionCode; security: Security | null }) {
+export function FunctionRouter({
+  functionCode,
+  security,
+  qualifiers,
+}: {
+  functionCode: FunctionCode;
+  security: Security | null;
+  qualifiers?: CommandQualifiers;
+}) {
   const Component = FUNCTION_MAP[functionCode];
   if (!Component) return <div className="text-bloomberg-red p-4">UNKNOWN FUNCTION: {functionCode}</div>;
-  return <Component security={security} />;
+  return <Component security={security} qualifiers={qualifiers} />;
 }

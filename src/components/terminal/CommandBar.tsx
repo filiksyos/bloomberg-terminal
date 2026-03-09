@@ -13,7 +13,11 @@ export function CommandBar() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [nlpHint, setNlpHint] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const hasSpaceInput = /\s/.test(input.trim());
+  const isNlpMode = hasSpaceInput;
 
   const activePanelId = useTerminalStore((s) => s.activePanelId);
   const panels = useTerminalStore((s) => s.panels);
@@ -29,8 +33,11 @@ export function CommandBar() {
   const debouncedSearch = useCallback(
     debounce(async (q: string) => {
       if (q.length < 2) return;
+      // In NLP mode (user typed a space), only search the first word — Finnhub expects ticker/company names, not full sentences
+      const searchQuery = /\s/.test(q.trim()) ? (q.trim().split(/\s+/)[0] ?? "") : q;
+      if (searchQuery.length < 2) return;
       try {
-        const res = await fetch(`/api/stocks/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
         setSearchResults(data.results?.slice(0, 5) || []);
       } catch {
@@ -54,6 +61,12 @@ export function CommandBar() {
     debouncedSearch(input);
   }, [input, debouncedSearch]);
 
+  useEffect(() => {
+    if (!nlpHint) return;
+    const t = setTimeout(() => setNlpHint(null), 4000);
+    return () => clearTimeout(t);
+  }, [nlpHint]);
+
   async function resolveSecurity(query: string): Promise<Security | null> {
     try {
       const res = await fetch(`/api/stocks/search?q=${encodeURIComponent(query)}`);
@@ -73,25 +86,74 @@ export function CommandBar() {
 
   async function executeCommand() {
     if (!input.trim()) return;
-    const parsed = parseCommand(input);
     if (!activePanel) return;
 
-    addCommandToHistory(input);
-
-    if (parsed.type === "function" && parsed.functionCode) {
-      const currentTab = activePanel.tabs.find((t) => t.id === activePanel.activeTabId);
-      navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null);
-    } else if (parsed.type === "security_function" && parsed.functionCode && parsed.securityQuery) {
-      const security = await resolveSecurity(parsed.securityQuery);
-      if (security) {
-        setGroupSecurity(activePanel.group, security);
-        navigateToFunction(activePanelId, parsed.functionCode, security);
+    if (hasSpaceInput) {
+      addCommandToHistory(input);
+      try {
+        const res = await fetch("/api/nlp/command", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: input }),
+        });
+        const data = await res.json();
+        if (data.error === "no_key") {
+          setNlpHint("✦ Add OPENROUTER_API_KEY to .env to use natural language commands");
+          return;
+        }
+        if (data.error === "api_error" || !data.command) {
+          setNlpHint("✦ Could not interpret command");
+          return;
+        }
+        const parsed = parseCommand(data.command);
+        let executionSucceeded = false;
+        if (parsed.type === "function" && parsed.functionCode) {
+          const currentTab = activePanel.tabs.find((t) => t.id === activePanel.activeTabId);
+          navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null, parsed.qualifiers);
+          executionSucceeded = true;
+        } else if (parsed.type === "security_function" && parsed.functionCode && parsed.securityQuery) {
+          const security = await resolveSecurity(parsed.securityQuery);
+          if (security) {
+            setGroupSecurity(activePanel.group, security);
+            navigateToFunction(activePanelId, parsed.functionCode, security, parsed.qualifiers);
+            executionSucceeded = true;
+          }
+        } else if (parsed.type === "security" && parsed.securityQuery) {
+          const security = await resolveSecurity(parsed.securityQuery);
+          if (security) {
+            setGroupSecurity(activePanel.group, security);
+            navigateToFunction(activePanelId, "DES", security);
+            executionSucceeded = true;
+          }
+        }
+        if (!executionSucceeded) {
+          setNlpHint("✦ Could not interpret command");
+          return;
+        }
+        setNlpHint("✦ Interpreted as: " + data.command);
+      } catch {
+        setNlpHint("✦ Could not interpret command");
+        return;
       }
-    } else if (parsed.type === "security" && parsed.securityQuery) {
-      const security = await resolveSecurity(parsed.securityQuery);
-      if (security) {
-        setGroupSecurity(activePanel.group, security);
-        navigateToFunction(activePanelId, "DES", security);
+    } else {
+      const parsed = parseCommand(input);
+      addCommandToHistory(input);
+
+      if (parsed.type === "function" && parsed.functionCode) {
+        const currentTab = activePanel.tabs.find((t) => t.id === activePanel.activeTabId);
+        navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null, parsed.qualifiers);
+      } else if (parsed.type === "security_function" && parsed.functionCode && parsed.securityQuery) {
+        const security = await resolveSecurity(parsed.securityQuery);
+        if (security) {
+          setGroupSecurity(activePanel.group, security);
+          navigateToFunction(activePanelId, parsed.functionCode, security, parsed.qualifiers);
+        }
+      } else if (parsed.type === "security" && parsed.securityQuery) {
+        const security = await resolveSecurity(parsed.securityQuery);
+        if (security) {
+          setGroupSecurity(activePanel.group, security);
+          navigateToFunction(activePanelId, "DES", security);
+        }
       }
     }
 
@@ -142,19 +204,20 @@ export function CommandBar() {
   }
 
   return (
-    <div className="relative bg-bloomberg-panel border-b border-bloomberg-border shrink-0">
+    <div className={`relative bg-bloomberg-panel border-b shrink-0 ${isNlpMode ? "border-[#fb8b1e]" : "border-bloomberg-border"}`}>
       <div className="flex items-center h-7 px-2 gap-2">
         <span className="text-bloomberg-brand-green font-bold text-[10px] tracking-widest shrink-0">
           BLOOMBERG
         </span>
         <span className="text-bloomberg-brand-green shrink-0 text-[10px]">{">"}</span>
+        {isNlpMode && <span className="text-bloomberg-amber shrink-0 text-[12px]">✦</span>}
         <input
           ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => setCommandFocused(true)}
+          onFocus={() => { setCommandFocused(true); setNlpHint(null); }}
           onBlur={() => setTimeout(() => { setCommandFocused(false); setShowDropdown(false); }, 200)}
           placeholder="Enter command or security..."
           className="flex-1 bg-transparent text-bloomberg-amber font-mono text-[11px] outline-none placeholder:text-bloomberg-muted caret-bloomberg-amber"
@@ -181,6 +244,12 @@ export function CommandBar() {
           ))}
         </div>
       </div>
+
+      {nlpHint && (
+        <div className="px-2 py-0.5 text-[10px] text-bloomberg-amber bg-bloomberg-panel border-b border-bloomberg-border">
+          {nlpHint}
+        </div>
+      )}
 
       {showDropdown && (suggestions.length > 0 || searchResults.length > 0) && (
         <div className="absolute top-8 left-0 right-0 z-50 bg-bloomberg-panel border border-bloomberg-border max-h-64 overflow-y-auto shadow-lg">

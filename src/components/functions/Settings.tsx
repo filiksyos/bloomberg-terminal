@@ -10,7 +10,7 @@ export function Settings({ security }: { security?: Security | null }) {
   const {
     finnhubKey, fmpKey, alphaVantageKey, fredKey, alpacaKeyId, alpacaSecretKey,
     setApiKey,
-    refreshInterval, flashPrices, compactMode, soundEnabled,
+    refreshInterval, flashPrices, compactMode, soundEnabled, theme, setTheme,
     setRefreshInterval, setFlashPrices, setCompactMode, setSoundEnabled,
   } = useSettingsStore();
 
@@ -75,6 +75,12 @@ export function Settings({ security }: { security?: Security | null }) {
       <div className="border border-bloomberg-border p-3 space-y-3">
         <div className="text-bloomberg-amber font-bold text-sm">Display</div>
         <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-bloomberg-white w-48">Theme</label>
+            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className={`bb-btn text-[10px] ${theme === "dark" ? "bb-btn-active" : ""}`}>
+              {theme === "dark" ? "DARK" : "LIGHT"}
+            </button>
+          </div>
           <div className="flex items-center gap-3">
             <label className="text-xs text-bloomberg-white w-48">Refresh Interval (seconds)</label>
             <input type="number" value={refreshInterval} onChange={(e) => setRefreshInterval(parseInt(e.target.value) || 15)} className="bb-input w-20" min="5" max="300" />

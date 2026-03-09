@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { PanelState, FunctionCode, LayoutMode, Security } from "@/lib/types";
+import type { PanelState, FunctionCode, LayoutMode, Security, CommandQualifiers } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
 
 interface TerminalState {
@@ -11,10 +11,10 @@ interface TerminalState {
   fullscreenPanelId: string | null;
   setActivePanelId: (id: string) => void;
   setFullscreenPanel: (id: string | null) => void;
-  addTab: (panelId: string, functionCode: FunctionCode, security: Security | null) => void;
+  addTab: (panelId: string, functionCode: FunctionCode, security: Security | null, qualifiers?: CommandQualifiers) => void;
   closeTab: (panelId: string, tabId: string) => void;
   setActiveTab: (panelId: string, tabId: string) => void;
-  navigateToFunction: (panelId: string, functionCode: FunctionCode, security: Security | null) => void;
+  navigateToFunction: (panelId: string, functionCode: FunctionCode, security: Security | null, qualifiers?: CommandQualifiers) => void;
   commandBarFocused: boolean;
   setCommandFocused: (focused: boolean) => void;
   commandHistory: string[];
@@ -46,7 +46,7 @@ export const useTerminalStore = create<TerminalState>()(
       setActivePanelId: (id) => set({ activePanelId: id }),
       setFullscreenPanel: (id) => set({ fullscreenPanelId: id }),
 
-      addTab: (panelId, functionCode, security) => {
+      addTab: (panelId, functionCode, security, qualifiers) => {
         const tabId = nanoid();
         const title = security ? `${security.symbol} ${functionCode}` : functionCode;
         set((state) => ({
@@ -54,7 +54,7 @@ export const useTerminalStore = create<TerminalState>()(
             p.id === panelId
               ? {
                   ...p,
-                  tabs: [...p.tabs, { id: tabId, functionCode, security, title }],
+                  tabs: [...p.tabs, { id: tabId, functionCode, security, title, qualifiers }],
                   activeTabId: tabId,
                 }
               : p
@@ -92,7 +92,7 @@ export const useTerminalStore = create<TerminalState>()(
         }));
       },
 
-      navigateToFunction: (panelId, functionCode, security) => {
+      navigateToFunction: (panelId, functionCode, security, qualifiers) => {
         set((state) => ({
           panels: state.panels.map((p) => {
             if (p.id !== panelId) return p;
@@ -102,7 +102,7 @@ export const useTerminalStore = create<TerminalState>()(
             return {
               ...p,
               tabs: p.tabs.map((t) =>
-                t.id === p.activeTabId ? { ...t, functionCode, security, title } : t
+                t.id === p.activeTabId ? { ...t, functionCode, security, title, qualifiers } : t
               ),
             };
           }),

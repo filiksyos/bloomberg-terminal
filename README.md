@@ -2,6 +2,8 @@
 
 A web-based Bloomberg Terminal clone with real-time market data, technical analysis, and paper trading. Built with Next.js 15, TypeScript, and Tailwind CSS.
 
+> **Fork of [aravhawk/bloomberg-terminal](https://github.com/aravhawk/bloomberg-terminal)** — enhanced with AI-powered natural language commands, improved with traycer.
+
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
@@ -31,6 +33,12 @@ A web-based Bloomberg Terminal clone with real-time market data, technical analy
 - Real-time price streaming via WebSocket (Finnhub)
 - Alpaca paper trading integration with order entry, order management, and position tracking
 
+**AI-powered natural language commands:**
+- Type a natural language query in the command bar (e.g., *"show me Apple's 5 year chart"*, *"open financial analysis for Microsoft"*, *"top market news"*)
+- The command bar detects multi-word input and uses an LLM (via OpenRouter) to interpret it into the correct Bloomberg command
+- Supports ticker resolution (e.g., *"Tesla GP"* → TSLA GP) and timeframe qualifiers (e.g., *"AAPL chart last 5 years"* → AAPL GP 5Y)
+- Requires `OPENROUTER_API_KEY` in `.env.local` to enable
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router, Turbopack)
@@ -41,6 +49,7 @@ A web-based Bloomberg Terminal clone with real-time market data, technical analy
 - **Charts**: lightweight-charts v5, Recharts
 - **Real-time**: WebSocket (Finnhub)
 - **Trading**: Alpaca Markets API (paper trading)
+- **AI / NLP**: OpenRouter (GPT-4o-mini) for natural language command interpretation
 
 ## Getting Started
 
@@ -52,7 +61,7 @@ A web-based Bloomberg Terminal clone with real-time market data, technical analy
 ### Installation
 
 ```bash
-git clone git@github.com:aravhawk/bloomberg-terminal.git
+git clone <your-repo-url>
 cd bloomberg-terminal
 pnpm install
 ```
@@ -73,6 +82,9 @@ NEXT_PUBLIC_FINNHUB_API_KEY=  # Same as FINNHUB_API_KEY (for WebSocket)
 ALPACA_API_KEY_ID=         # https://alpaca.markets (free paper trading)
 ALPACA_API_SECRET_KEY=
 ALPACA_TRADING_ENV=paper   # "paper" or "live"
+
+# AI / Natural language commands (optional)
+OPENROUTER_API_KEY=        # https://openrouter.ai — enables natural language command interpretation
 ```
 
 CoinGecko and ExchangeRate-API are free with no key required.
@@ -94,12 +106,13 @@ pnpm start
 
 ## Usage
 
-Type commands in the command bar at the top:
+Type commands in the command bar at the top. Use the standard `TICKER FUNCTION` syntax, or (with `OPENROUTER_API_KEY` set) type natural language:
 
 | Command | Action |
 |---------|--------|
 | `AAPL` | Load Apple as the active security |
 | `AAPL GP` | Open Apple's price chart |
+| `show me Apple's 5 year chart` | Natural language → interpreted as `AAPL GP 5Y` |
 | `FA` | Open Financial Analysis for the current security |
 | `TRADE` | Open order entry for the current security |
 | `OMS` | Open order management system |

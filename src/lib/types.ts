@@ -311,11 +311,26 @@ export type FunctionCode =
   | "BQ" | "CN" | "MGMT" | "GIP" | "IPO" | "CACS" | "SECF"
   | "TRADE" | "OMS" | "BLOTTER";
 
+export interface CommandQualifiers {
+  timeframe?: string;
+  /** EQS: sector filter (e.g. Technology, Healthcare) */
+  sector?: string;
+  /** EQS: exchange filter (e.g. NYSE, NASDAQ, AMEX) */
+  exchange?: string;
+  /** EQS: country filter (e.g. US, CA, GB) */
+  country?: string;
+  /** EQS: result limit */
+  limit?: number;
+  /** MOST: movers tab (gainers, losers, actives) */
+  moversType?: "gainers" | "losers" | "actives";
+}
+
 export interface PanelTab {
   id: string;
   functionCode: FunctionCode;
   security: Security | null;
   title: string;
+  qualifiers?: CommandQualifiers;
 }
 
 export interface PanelState {

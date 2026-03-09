@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useWebSocketContext } from "@/providers/WebSocketProvider";
+import { useSettingsStore } from "@/store/settingsStore";
 import { useTerminalStore } from "@/store/terminalStore";
 
 export function StatusBar() {
   const [time, setTime] = useState(new Date());
   const { isConnected } = useWebSocketContext();
   const layout = useTerminalStore((s) => s.layout);
+  const { theme, setTheme } = useSettingsStore();
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -30,8 +32,16 @@ export function StatusBar() {
         <span className="text-bloomberg-muted">{isConnected ? "LIVE" : "DISC"}</span>
       </span>
       <span className="text-bloomberg-muted uppercase">{layout}</span>
-      <span className="ml-auto text-bloomberg-muted">
-        {time.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+      <span className="ml-auto flex items-center gap-2">
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className={`bb-btn text-[9px] ${theme === "dark" ? "bb-btn-active" : ""}`}
+        >
+          {theme === "dark" ? "DARK" : "LIGHT"}
+        </button>
+        <span className="text-bloomberg-muted">
+          {time.toLocaleDateString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+        </span>
       </span>
     </div>
   );
