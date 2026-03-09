@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { FUNCTION_REGISTRY } from "@/lib/constants";
+import { FUNCTION_REGISTRY, TIMEFRAME_CONFIG } from "@/lib/constants";
+
+const VALID_TIMEFRAME_VALUES = TIMEFRAME_CONFIG.map((t) => t.value).join(", ");
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +16,8 @@ export async function POST(req: Request) {
       const suffix = entry.requiresSecurity
         ? ` — requires a security ticker prefix (e.g. AAPL ${entry.code})`
         : " — standalone, no ticker needed";
-      return `${entry.code}${suffix}: ${entry.description}`;
+      const qualifierNote = entry.code === "GP" ? " — supports optional timeframe qualifier (e.g. AAPL GP 5Y)" : "";
+      return `${entry.code}${suffix}${qualifierNote}: ${entry.description}`;
     }).join("\n");
 
     const systemPrompt = `You are a Bloomberg Terminal command parser. Output ONLY a valid Bloomberg command string. No explanation, no punctuation, no surrounding text.
@@ -22,8 +25,14 @@ export async function POST(req: Request) {
 Valid commands (output exactly one of these formats):
 ${commandList}
 
+Qualifiers (optional, for GP/Graph only):
+- Timeframe: ${VALID_TIMEFRAME_VALUES}
+- Use when user asks for a chart over a period (e.g. "last 5 years", "5 day chart", "year to date")
+
 Output format examples:
 - AAPL GP (ticker + space + function code for security-required functions)
+- AAPL GP 5Y (ticker + function + timeframe qualifier for chart time range)
+- AAPL GP 1D (intraday / 1 day chart)
 - FXCA (function code only for standalone functions)
 - TOP (function code only)
 - AAPL DES (ticker + space + function code)

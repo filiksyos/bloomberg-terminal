@@ -106,13 +106,13 @@ export function CommandBar() {
         let executionSucceeded = false;
         if (parsed.type === "function" && parsed.functionCode) {
           const currentTab = activePanel.tabs.find((t) => t.id === activePanel.activeTabId);
-          navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null);
+          navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null, parsed.qualifiers);
           executionSucceeded = true;
         } else if (parsed.type === "security_function" && parsed.functionCode && parsed.securityQuery) {
           const security = await resolveSecurity(parsed.securityQuery);
           if (security) {
             setGroupSecurity(activePanel.group, security);
-            navigateToFunction(activePanelId, parsed.functionCode, security);
+            navigateToFunction(activePanelId, parsed.functionCode, security, parsed.qualifiers);
             executionSucceeded = true;
           }
         } else if (parsed.type === "security" && parsed.securityQuery) {
@@ -138,12 +138,12 @@ export function CommandBar() {
 
       if (parsed.type === "function" && parsed.functionCode) {
         const currentTab = activePanel.tabs.find((t) => t.id === activePanel.activeTabId);
-        navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null);
+        navigateToFunction(activePanelId, parsed.functionCode, currentTab?.security || null, parsed.qualifiers);
       } else if (parsed.type === "security_function" && parsed.functionCode && parsed.securityQuery) {
         const security = await resolveSecurity(parsed.securityQuery);
         if (security) {
           setGroupSecurity(activePanel.group, security);
-          navigateToFunction(activePanelId, parsed.functionCode, security);
+          navigateToFunction(activePanelId, parsed.functionCode, security, parsed.qualifiers);
         }
       } else if (parsed.type === "security" && parsed.securityQuery) {
         const security = await resolveSecurity(parsed.securityQuery);

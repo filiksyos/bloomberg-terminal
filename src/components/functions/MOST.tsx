@@ -1,15 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LoadingState } from "@/components/data-display/LoadingState";
 import { formatPrice, formatPercent, formatVolume, getChangeColor } from "@/lib/formatters";
-import type { Security } from "@/lib/types";
+import type { Security, CommandQualifiers } from "@/lib/types";
 
 const TABS = [
   { key: "gainers", label: "Top Gainers" },
   { key: "losers", label: "Top Losers" },
   { key: "actives", label: "Most Active" },
 ] as const;
+
+const VALID_MOVERS_TYPES = new Set(TABS.map((t) => t.key));
 
 interface MoverItem {
   symbol: string;
@@ -20,9 +22,16 @@ interface MoverItem {
   volume: number;
 }
 
-export function MOST({ security }: { security?: Security | null }) {
+export function MOST({ security, qualifiers }: { security?: Security | null; qualifiers?: CommandQualifiers }) {
   void security;
-  const [tab, setTab] = useState<string>("gainers");
+  const initialTab = qualifiers?.moversType && VALID_MOVERS_TYPES.has(qualifiers.moversType) ? qualifiers.moversType : "gainers";
+  const [tab, setTab] = useState<string>(initialTab);
+
+  useEffect(() => {
+    if (qualifiers?.moversType && VALID_MOVERS_TYPES.has(qualifiers.moversType)) {
+      setTab(qualifiers.moversType);
+    }
+  }, [qualifiers]);
 
   const { data, isLoading } = useQuery<MoverItem[]>({
     queryKey: ["movers", tab],

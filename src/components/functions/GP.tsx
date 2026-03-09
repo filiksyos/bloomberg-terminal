@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useCandles } from "@/hooks/useCandles";
 import { CandlestickChart, type IndicatorConfig } from "@/components/charts/CandlestickChart";
 import { LineChart } from "@/components/charts/LineChart";
@@ -8,7 +8,7 @@ import { LoadingState } from "@/components/data-display/LoadingState";
 import { TIMEFRAME_CONFIG } from "@/lib/constants";
 import { formatPrice, formatVolume } from "@/lib/formatters";
 import { calculateRSI, calculateMACD } from "@/lib/indicators";
-import type { Security, CandleData } from "@/lib/types";
+import type { Security, CandleData, CommandQualifiers } from "@/lib/types";
 import {
   ResponsiveContainer,
   LineChart as RechartsLine,
@@ -42,8 +42,17 @@ const INDICATOR_COLORS: Record<IndicatorType, string> = {
   BB: "#673AB7",
 };
 
-export function GP({ security }: { security?: Security | null }) {
-  const [timeframe, setTimeframe] = useState("3M");
+const VALID_TIMEFRAMES = new Set(TIMEFRAME_CONFIG.map((t) => t.value));
+
+export function GP({ security, qualifiers }: { security?: Security | null; qualifiers?: CommandQualifiers }) {
+  const initialTf = qualifiers?.timeframe && VALID_TIMEFRAMES.has(qualifiers.timeframe) ? qualifiers.timeframe : "3M";
+  const [timeframe, setTimeframe] = useState(initialTf);
+
+  useEffect(() => {
+    if (qualifiers?.timeframe && VALID_TIMEFRAMES.has(qualifiers.timeframe)) {
+      setTimeframe(qualifiers.timeframe);
+    }
+  }, [qualifiers]);
   const [crosshairData, setCrosshairData] = useState<{ open: number; high: number; low: number; close: number; volume: number } | null>(null);
   const [chartType, setChartType] = useState<ChartType>("candle");
   const [indicators, setIndicators] = useState<IndicatorConfig[]>([]);
