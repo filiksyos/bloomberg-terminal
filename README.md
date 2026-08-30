@@ -1,6 +1,8 @@
+
+
 # Bloomberg Terminal Clone
 
-A web-based Bloomberg Terminal clone with real-time market data, technical analysis, and paper trading. Built with Next.js 15, TypeScript, and Tailwind CSS.
+A web-based Bloomberg Terminal clone with real-time market data, technical analysis, and paper trading. Built with Next.js 16, TypeScript, and Tailwind CSS.
 
 > **Fork of [aravhawk/bloomberg-terminal](https://github.com/aravhawk/bloomberg-terminal)** — enhanced with AI-powered natural language commands, improved with traycer.
 
@@ -39,7 +41,7 @@ A web-based Bloomberg Terminal clone with real-time market data, technical analy
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router, Turbopack)
+- **Framework**: Next.js 16 (App Router, Turbopack)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
 - **State**: Zustand v5 with persist middleware
